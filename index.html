@@ -248,11 +248,35 @@
         
         /* Footer */
         footer {
-            text-align: center;
-            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 50px;
             margin-top: auto;
             background-color: rgba(26, 26, 64, 0.8);
             backdrop-filter: blur(10px);
+        }
+        
+        .footer-left {
+            text-align: left;
+        }
+        
+        .footer-right {
+            text-align: right;
+        }
+        
+        .logout-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--light);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: var(--secondary);
         }
         
         /* Modal Styles */
@@ -278,6 +302,7 @@
             text-align: center;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
         
         .close-btn {
@@ -289,25 +314,63 @@
             color: var(--light);
         }
         
-        /* Audio Visualization */
-        .visualization {
-            width: 100%;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-            position: relative;
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
         }
         
-        .bar {
-            position: absolute;
-            bottom: 0;
-            width: 10px;
-            height: 20px;
-            background: var(--accent);
-            border-radius: 5px 5px 0 0;
-            transition: height 0.1s ease;
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .form-footer {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .form-footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* OTP Input */
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
         }
         
         /* Responsive Design */
@@ -335,17 +398,51 @@
                 flex-direction: column;
                 align-items: center;
             }
+            
+            footer {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .footer-left, .footer-right {
+                text-align: center;
+            }
         }
         
-        /* Animation Keyframes */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
         
-        .pulse {
-            animation: pulse 2s infinite;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* User Badge */
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -354,9 +451,15 @@
         <a href="#" class="logo">
             <i class="fas fa-brain"></i>EMORECO
         </a>
-        <div class="auth-buttons">
-            <button class="btn sign-in-btn">Sign In</button>
-            <button class="btn free-trial-btn">Try for Free</button>
+        <div class="auth-buttons" id="authButtons">
+            <button class="btn sign-in-btn" id="signInBtn">Sign In</button>
+            <button class="btn free-trial-btn" id="registerBtn">Try for Free</button>
+        </div>
+        <div id="userSection" style="display: none;">
+            <div class="user-badge">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userName">User</span>
+            </div>
         </div>
     </header>
 
@@ -370,7 +473,7 @@
                     <i class="fas fa-robot"></i>
                 </div>
                 <h3 class="feature-title">Advanced AI</h3>
-                <p>Powered by deep learning algorithms trained on millions of voice samples</p>
+                <p>Powered by AssemblyAI's deep learning algorithms</p>
             </div>
             
             <div class="feature-card">
@@ -424,365 +527,298 @@
             <div class="step">
                 <div class="step-number">2</div>
                 <h3>AI Processes</h3>
-                <p>Our AI analyzes vocal patterns and frequencies</p>
+                <p>AssemblyAI analyzes vocal patterns</p>
             </div>
             
             <div class="step">
                 <div class="step-number">3</div>
                 <h3>Get Results</h3>
-                <p>Receive detailed emotion analysis report</p>
+                <p>Receive detailed emotion analysis</p>
             </div>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2025 EMORECO - Voice-Based Emotion Recognition AI. All rights reserved.</p>
+        <div class="footer-left">
+            <p>&copy; 2025 EMORECO - Voice-Based Emotion Recognition AI. All rights reserved.</p>
+        </div>
+        <div class="footer-right">
+            <button class="logout-btn" id="logoutBtn" style="display: none;">Logout</button>
+        </div>
     </footer>
 
-    <!-- Live Mic Modal -->
-    <div class="modal" id="liveMicModal">
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
         <div class="modal-content">
-            <span class="close-btn" id="closeLiveMic">&times;</span>
-            <h2>Live Microphone Analysis</h2>
-            <p>Speak into your microphone to analyze emotions in real-time</p>
+            <span class="close-btn" id="closeLogin">&times;</span>
+            <h2>Sign In to EMORECO</h2>
             
-            <div class="visualization" id="visualization">
-                <!-- Audio bars will be generated by JavaScript -->
+            <div class="form-group">
+                <label for="loginEmail">Username or Email</label>
+                <input type="text" id="loginEmail" placeholder="Enter your username or email">
             </div>
             
-            <div id="emotionResult">
-                <p>Waiting for audio input...</p>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
             </div>
             
-            <button class="action-button" id="startListening">Start Listening</button>
-            <button class="action-button" id="stopListening" style="display: none; background: var(--secondary);">Stop Listening</button>
+            <button class="action-button" id="loginButton">Sign In</button>
+            
+            <div class="form-footer">
+                <p>Don't have an account? <a href="#" id="goToRegister">Register now</a></p>
+            </div>
         </div>
     </div>
 
-    <!-- Upload Audio Modal -->
-    <div class="modal" id="uploadModal">
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
         <div class="modal-content">
-            <span class="close-btn" id="closeUpload">&times;</span>
-            <h2>Upload Audio File</h2>
-            <p>Select an audio file to analyze emotions</p>
+            <span class="close-btn" id="closeRegister">&times;</span>
+            <h2>Create an Account</h2>
             
-            <div style="margin: 20px 0;">
-                <input type="file" id="audioFile" accept="audio/*" style="display: none;">
-                <button class="action-button" onclick="document.getElementById('audioFile').click()">Choose File</button>
+            <div class="form-group">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername" placeholder="Choose a username">
             </div>
             
-            <div id="fileInfo">
-                <p>No file selected</p>
+            <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input type="email" id="regEmail" placeholder="Enter your email">
             </div>
             
-            <div class="visualization" id="uploadVisualization">
-                <!-- Audio visualization for uploaded file -->
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" placeholder="Create a password">
             </div>
             
-            <div id="uploadResult">
-                <p>Upload a file to see analysis</p>
+            <div class="form-group">
+                <label for="regConfirmPassword">Confirm Password</label>
+                <input type="password" id="regConfirmPassword" placeholder="Confirm your password">
             </div>
             
-            <button class="action-button" id="analyzeButton" disabled>Analyze Emotions</button>
+            <button class="action-button" id="sendOtpButton">Send OTP</button>
+            
+            <div id="otpSection" style="display: none; margin-top: 20px;">
+                <div class="form-group">
+                    <label>Enter OTP Sent to Your Email</label>
+                    <div class="otp-container">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                        <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this)">
+                    </div>
+                </div>
+                
+                <button class="action-button" id="verifyOtpButton">Verify & Register</button>
+            </div>
+            
+            <div class="form-footer">
+                <p>Already have an account? <a href="#" id="goToLogin">Sign in</a></p>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const liveMicCard = document.getElementById('liveMicCard');
-            const uploadAudioCard = document.getElementById('uploadAudioCard');
-            const liveMicModal = document.getElementById('liveMicModal');
-            const uploadModal = document.getElementById('uploadModal');
-            const closeLiveMic = document.getElementById('closeLiveMic');
-            const closeUpload = document.getElementById('closeUpload');
-            const startListeningBtn = document.getElementById('startListening');
-            const stopListeningBtn = document.getElementById('stopListening');
-            const audioFileInput = document.getElementById('audioFile');
-            const fileInfo = document.getElementById('fileInfo');
-            const analyzeButton = document.getElementById('analyzeButton');
-            const visualization = document.getElementById('visualization');
-            const emotionResult = document.getElementById('emotionResult');
-            
-            // Audio context for visualization
-            let audioContext;
-            let analyser;
-            let microphone;
-            let javascriptNode;
-            let isListening = false;
-            
-            // Open Live Mic Modal
-            liveMicCard.addEventListener('click', function() {
-                liveMicModal.style.display = 'flex';
-                createBars(visualization, 50);
-            });
-            
-            // Open Upload Modal
-            uploadAudioCard.addEventListener('click', function() {
-                uploadModal.style.display = 'flex';
-                createBars(document.getElementById('uploadVisualization'), 50);
-            });
-            
-            // Close Modals
-            closeLiveMic.addEventListener('click', function() {
-                liveMicModal.style.display = 'none';
-                if (isListening) stopListening();
-            });
-            
-            closeUpload.addEventListener('click', function() {
-                uploadModal.style.display = 'none';
-            });
-            
-            // Start/Stop Listening
-            startListeningBtn.addEventListener('click', startListening);
-            stopListeningBtn.addEventListener('click', stopListening);
-            
-            // File Upload Handling
-            audioFileInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const file = this.files[0];
-                    fileInfo.innerHTML = `<p>Selected file: <strong>${file.name}</strong></p>`;
-                    analyzeButton.disabled = false;
-                }
-            });
-            
-            // Analyze Button
-            analyzeButton.addEventListener('click', function() {
-                const file = audioFileInput.files[0];
-                if (file) {
-                    simulateAnalysis(document.getElementById('uploadResult'), file.name);
-                }
-            });
-            
-            // Create visualization bars
-            function createBars(container, count) {
-                container.innerHTML = '';
-                const width = container.clientWidth / count - 2;
-                
-                for (let i = 0; i < count; i++) {
-                    const bar = document.createElement('div');
-                    bar.className = 'bar';
-                    bar.style.left = i * (width + 2) + 'px';
-                    bar.style.width = width + 'px';
-                    container.appendChild(bar);
-                }
-            }
-            
-            // Start Listening Function
-            function startListening() {
-                isListening = true;
-                startListeningBtn.style.display = 'none';
-                stopListeningBtn.style.display = 'inline-block';
-                emotionResult.innerHTML = '<p>Listening... Speak now</p>';
-                
-                // Simulate audio visualization
-                simulateAudioVisualization(visualization);
-                
-                // In a real app, this would initialize the Web Audio API
-                try {
-                    // Initialize audio context
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    analyser = audioContext.createAnalyser();
-                    javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-                    
-                    // Set up analyser
-                    analyser.smoothingTimeConstant = 0.8;
-                    analyser.fftSize = 1024;
-                    
-                    // Connect nodes
-                    javascriptNode.connect(audioContext.destination);
-                    analyser.connect(javascriptNode);
-                    
-                    // Get microphone input
-                    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                        .then(function(stream) {
-                            microphone = audioContext.createMediaStreamSource(stream);
-                            microphone.connect(analyser);
-                            
-                            // Process audio
-                            javascriptNode.onaudioprocess = function() {
-                                const array = new Uint8Array(analyser.frequencyBinCount);
-                                analyser.getByteFrequencyData(array);
-                                
-                                // Update visualization
-                                const bars = visualization.getElementsByClassName('bar');
-                                for (let i = 0; i < bars.length; i++) {
-                                    const value = array[i] / 255;
-                                    const height = value * 100;
-                                    bars[i].style.height = height + 'px';
-                                }
-                                
-                                // In a real app, we would send data to the AI here
-                            };
-                        })
-                        .catch(function(err) {
-                            // Fallback to simulation if microphone access fails
-                            console.error('Error accessing microphone:', err);
-                            simulateAudioVisualization(visualization);
-                        });
-                } catch (e) {
-                    console.error('Error initializing audio:', e);
-                    simulateAudioVisualization(visualization);
-                }
-                
-                // Simulate emotion detection after a delay
-                setTimeout(() => {
-                    detectEmotion();
-                }, 3000);
-            }
-            
-            // Stop Listening Function
-            function stopListening() {
-                isListening = false;
-                startListeningBtn.style.display = 'inline-block';
-                stopListeningBtn.style.display = 'none';
-                emotionResult.innerHTML = '<p>Listening stopped</p>';
-                
-                // Disconnect audio nodes
-                if (javascriptNode) {
-                    javascriptNode.onaudioprocess = null;
-                    javascriptNode.disconnect();
-                }
-                
-                if (microphone) {
-                    microphone.disconnect();
-                }
-                
-                if (analyser) {
-                    analyser.disconnect();
-                }
-                
-                // Stop visualization
-                const bars = visualization.getElementsByClassName('bar');
-                for (let i = 0; i < bars.length; i++) {
-                    bars[i].style.height = '20px';
-                }
-            }
-            
-            // Simulate Audio Visualization
-            function simulateAudioVisualization(container) {
-                const bars = container.getElementsByClassName('bar');
-                let frameCount = 0;
-                
-                const animate = function() {
-                    if (!isListening) return;
-                    
-                    for (let i = 0; i < bars.length; i++) {
-                        // Create a wave pattern
-                        const height = 20 + Math.abs(Math.sin((frameCount + i * 3) / 10)) * 80;
-                        bars[i].style.height = height + 'px';
-                    }
-                    
-                    frameCount++;
-                    requestAnimationFrame(animate);
-                };
-                
-                animate();
-            }
-            
-            // Simulate Emotion Detection
-            function detectEmotion() {
-                if (!isListening) return;
-                
-                const emotions = [
-                    { name: 'Happiness', value: Math.random() * 100 },
-                    { name: 'Sadness', value: Math.random() * 100 },
-                    { name: 'Anger', value: Math.random() * 100 },
-                    { name: 'Fear', value: Math.random() * 100 },
-                    { name: 'Neutral', value: Math.random() * 100 }
-                ];
-                
-                // Normalize values
-                const total = emotions.reduce((sum, emotion) => sum + emotion.value, 0);
-                emotions.forEach(emotion => emotion.value = (emotion.value / total * 100).toFixed(1));
-                
-                // Sort by value
-                emotions.sort((a, b) => b.value - a.value);
-                
-                // Display results
-                let html = '<h3>Emotion Analysis Results:</h3>';
-                emotions.forEach(emotion => {
-                    html += `
-                        <div style="margin: 10px 0;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>${emotion.name}:</span>
-                                <span>${emotion.value}%</span>
-                            </div>
-                            <div style="height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
-                                <div style="height: 100%; width: ${emotion.value}%; background: var(--accent); border-radius: 5px;"></div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                emotionResult.innerHTML = html;
-            }
-            
-            // Simulate Analysis for Uploaded File
-            function simulateAnalysis(container, filename) {
-                container.innerHTML = '<p>Analyzing... Please wait</p>';
-                
-                // Simulate processing time
-                setTimeout(() => {
-                    const emotions = [
-                        { name: 'Happiness', value: (Math.random() * 100).toFixed(1) },
-                        { name: 'Sadness', value: (Math.random() * 100).toFixed(1) },
-                        { name: 'Anger', value: (Math.random() * 100).toFixed(1) },
-                        { name: 'Fear', value: (Math.random() * 100).toFixed(1) },
-                        { name: 'Neutral', value: (Math.random() * 100).toFixed(1) }
-                    ];
-                    
-                    // Normalize values
-                    const total = emotions.reduce((sum, emotion) => sum + parseFloat(emotion.value), 0);
-                    emotions.forEach(emotion => emotion.value = (parseFloat(emotion.value) / total * 100).toFixed(1));
-                    
-                    // Sort by value
-                    emotions.sort((a, b) => b.value - a.value);
-                    
-                    // Display results
-                    let html = `<h3>Analysis of "${filename}":</h3>`;
-                    emotions.forEach(emotion => {
-                        html += `
-                            <div style="margin: 10px 0;">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span>${emotion.name}:</span>
-                                    <span>${emotion.value}%</span>
-                                </div>
-                                <div style="height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
-                                    <div style="height: 100%; width: ${emotion.value}%; background: var(--primary); border-radius: 5px;"></div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    container.innerHTML = html;
-                }, 2000);
-            }
-            
-            // Initialize visualization bars
-            createBars(visualization, 50);
-            createBars(document.getElementById('uploadVisualization'), 50);
-            
-            // Add animation to feature cards on scroll
-            const featureCards = document.querySelectorAll('.feature-card');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.transform = 'translateY(0)';
-                        entry.target.style.opacity = '1';
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            featureCards.forEach(card => {
-                card.style.transform = 'translateY(50px)';
-                card.style.opacity = '0';
-                card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-                observer.observe(card);
-            });
+        // Simulated database (in real app, this would be on server)
+        const users = JSON.parse(localStorage.getItem('emoreco_users')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('emoreco_currentUser')) || null;
+        
+        // DOM Elements
+        const signInBtn = document.getElementById('signInBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const authButtons = document.getElementById('authButtons');
+        const userSection = document.getElementById('userSection');
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const closeLogin = document.getElementById('closeLogin');
+        const closeRegister = document.getElementById('closeRegister');
+        const goToRegister = document.getElementById('goToRegister');
+        const goToLogin = document.getElementById('goToLogin');
+        
+        const loginButton = document.getElementById('loginButton');
+        const sendOtpButton = document.getElementById('sendOtpButton');
+        const verifyOtpButton = document.getElementById('verifyOtpButton');
+        const otpSection = document.getElementById('otpSection');
+        
+        // Check if user is already logged in
+        if (currentUser) {
+            showUserSection();
+        }
+        
+        // Event Listeners
+        signInBtn.addEventListener('click', () => loginModal.style.display = 'flex');
+        registerBtn.addEventListener('click', () => registerModal.style.display = 'flex');
+        
+        closeLogin.addEventListener('click', () => loginModal.style.display = 'none');
+        closeRegister.addEventListener('click', () => registerModal.style.display = 'none');
+        
+        goToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.style.display = 'none';
+            registerModal.style.display = 'flex';
         });
+        
+        goToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.style.display = 'none';
+            loginModal.style.display = 'flex';
+        });
+        
+        loginButton.addEventListener('click', handleLogin);
+        sendOtpButton.addEventListener('click', handleSendOtp);
+        verifyOtpButton.addEventListener('click', handleVerifyOtp);
+        logoutBtn.addEventListener('click', handleLogout);
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === loginModal) loginModal.style.display = 'none';
+            if (e.target === registerModal) registerModal.style.display = 'none';
+        });
+        
+        // Functions
+        function showUserSection() {
+            authButtons.style.display = 'none';
+            userSection.style.display = 'flex';
+            logoutBtn.style.display = 'block';
+            userName.textContent = currentUser.username;
+            userAvatar.textContent = currentUser.username.charAt(0).toUpperCase();
+        }
+        
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            // Simulate API call
+            setTimeout(() => {
+                const user = users.find(u => 
+                    (u.email === email || u.username === email) && u.password === password
+                );
+                
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('emoreco_currentUser', JSON.stringify(user));
+                    loginModal.style.display = 'none';
+                    showUserSection();
+                    alert('Login successful!');
+                } else {
+                    alert('Invalid credentials. Please try again.');
+                }
+            }, 1000);
+        }
+        
+        function handleSendOtp() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (!username || !email || !password || !confirmPassword) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (users.find(u => u.email === email)) {
+                alert('Email already registered');
+                return;
+            }
+            
+            if (users.find(u => u.username === username)) {
+                alert('Username already taken');
+                return;
+            }
+            
+            // Simulate sending OTP (in real app, this would call Resend API)
+            alert(`OTP sent to ${email}. In real app, this would use Resend API.`);
+            otpSection.style.display = 'block';
+        }
+        
+        function handleVerifyOtp() {
+            // Get OTP values
+            const otpInputs = document.querySelectorAll('.otp-input');
+            let otp = '';
+            otpInputs.forEach(input => otp += input.value);
+            
+            if (otp.length !== 6) {
+                alert('Please enter a valid 6-digit OTP');
+                return;
+            }
+            
+            // In real app, verify OTP with server
+            // For demo, we'll assume OTP is correct
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            const newUser = {
+                id: Date.now(),
+                username,
+                email,
+                password, // In real app, this should be hashed
+                createdAt: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('emoreco_users', JSON.stringify(users));
+            
+            currentUser = newUser;
+            localStorage.setItem('emoreco_currentUser', JSON.stringify(newUser));
+            
+            registerModal.style.display = 'none';
+            showUserSection();
+            alert('Registration successful! You are now logged in.');
+        }
+        
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('emoreco_currentUser');
+            userSection.style.display = 'none';
+            logoutBtn.style.display = 'none';
+            authButtons.style.display = 'flex';
+            alert('You have been logged out.');
+        }
+        
+        function moveToNext(input) {
+            if (input.value.length === 1) {
+                const next = input.nextElementSibling;
+                if (next && next.classList.contains('otp-input')) {
+                    next.focus();
+                }
+            }
+        }
+        
+        // Simulated AssemblyAI API call (to be implemented with real API)
+        function analyzeWithAssemblyAI(audioData) {
+            console.log('Sending to AssemblyAI API...');
+            // This would make actual API call to AssemblyAI
+            // const response = await fetch('https://api.assemblyai.com/v2/transcript', {
+            //   method: 'POST',
+            //   headers: {
+            //     'authorization': process.env.ASSEMBLYAI_API_KEY,
+            //     'content-type': 'application/json'
+            //   },
+            //   body: JSON.stringify({
+            //     audio_url: audioUrl,
+            //     sentiment_analysis: true
+            //   })
+            // });
+        }
     </script>
-    
 </body>
 </html>
-
