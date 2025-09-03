@@ -3,23 +3,784 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <title>EMORECO - Voice-Based AI Emotion Recognition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --primary: #6C63FF;
+            --secondary: #FF6584;
+            --accent: #36D1DC;
+            --dark: #1A1A40;
+            --light: #F5F5F5;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1A1A40 0%, #3F3FBF 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: rgba(26, 26, 64, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .sign-in-btn {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--light);
+        }
+        
+        .sign-in-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+        
+        .free-trial-btn {
+            background: var(--secondary);
+            color: var(--light);
+        }
+        
+        .free-trial-btn:hover {
+            background: #FF8FA3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 101, 132, 0.4);
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        /* Features Section */
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 250px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Action Cards */
+        .action-cards {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            width: 300px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .action-card:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        
+        .action-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+        
+        .action-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .action-button {
+            padding: 12px 30px;
+            background: var(--primary);
+            color: var(--light);
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(54, 209, 220, 0.4);
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .how-it-works-title {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: var(--accent);
+        }
+        
+        .process-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            width: 200px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: auto;
+            background-color: rgba(26, 26, 64, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1A1A40 0%, #3F3FBF 100%);
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--light);
+        }
+        
+        /* Audio Visualization */
+        .visualization {
+            width: 100%;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar {
+            position: absolute;
+            bottom: 0;
+            width: 10px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.1s ease;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .action-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        /* Animation Keyframes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
 </head>
 <body>
-    <h1>Music World</h1>
-    <h2>&nbsp;&nbsp;Main Agar Kahoon</h2>
-    <div>
-        <div style="width: 320px; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
-  <iframe src="https://drive.google.com/file/d/1O-NtseqFddHDxU67MTHboDRYvwxGzXV7/preview" width="300" height="80" allow="autoplay" ></iframe>
-  <img src="poster1.jpg" alt="Main Agar Kahoon" style="width: 100%; border-radius: 8px;">
-</div>
+    <header>
+        <a href="#" class="logo">
+            <i class="fas fa-brain"></i>EMORECO
+        </a>
+        <div class="auth-buttons">
+            <button class="btn sign-in-btn">Sign In</button>
+            <button class="btn free-trial-btn">Try for Free</button>
+        </div>
+    </header>
 
-        <p>Song: Main Agar Kahoon</p>
-        <p>Artist: Sonu Nigam, Alka Yagnik</p>
-        <p>Album: Om Shanti Om</p>
-        <p>Year: 2007</p>
+    <section class="hero">
+        <h1>Voice-Based AI Emotion Recognition</h1>
+        <p class="subtitle">Upload or Speak live - AI detects emotions instantly</p>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="feature-title">Advanced AI</h3>
+                <p>Powered by deep learning algorithms trained on millions of voice samples</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Real-time Analysis</h3>
+                <p>Instant emotion detection from voice with high accuracy</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3 class="feature-title">Detailed Reports</h3>
+                <p>Comprehensive emotion analysis with visual reports</p>
+            </div>
+        </div>
+        
+        <div class="action-cards">
+            <div class="action-card" id="liveMicCard">
+                <div class="action-icon">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+                <h3 class="action-title">Try Live Mic</h3>
+                <p>Speak in real-time and see emotion analysis</p>
+                <button class="action-button">Start Listening</button>
+            </div>
+            
+            <div class="action-card" id="uploadAudioCard">
+                <div class="action-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <h3 class="action-title">Upload Audio</h3>
+                <p>Upload an audio file for emotion analysis</p>
+                <button class="action-button">Choose File</button>
+            </div>
+        </div>
+    </section>
 
-</div>
+    <section class="how-it-works">
+        <h2 class="how-it-works-title">How It Works</h2>
+        
+        <div class="process-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Speak or Upload</h3>
+                <p>Use microphone or upload audio file</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>AI Processes</h3>
+                <p>Our AI analyzes vocal patterns and frequencies</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Get Results</h3>
+                <p>Receive detailed emotion analysis report</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 EMORECO - Voice-Based Emotion Recognition AI. All rights reserved.</p>
+    </footer>
+
+    <!-- Live Mic Modal -->
+    <div class="modal" id="liveMicModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeLiveMic">&times;</span>
+            <h2>Live Microphone Analysis</h2>
+            <p>Speak into your microphone to analyze emotions in real-time</p>
+            
+            <div class="visualization" id="visualization">
+                <!-- Audio bars will be generated by JavaScript -->
+            </div>
+            
+            <div id="emotionResult">
+                <p>Waiting for audio input...</p>
+            </div>
+            
+            <button class="action-button" id="startListening">Start Listening</button>
+            <button class="action-button" id="stopListening" style="display: none; background: var(--secondary);">Stop Listening</button>
+        </div>
+    </div>
+
+    <!-- Upload Audio Modal -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeUpload">&times;</span>
+            <h2>Upload Audio File</h2>
+            <p>Select an audio file to analyze emotions</p>
+            
+            <div style="margin: 20px 0;">
+                <input type="file" id="audioFile" accept="audio/*" style="display: none;">
+                <button class="action-button" onclick="document.getElementById('audioFile').click()">Choose File</button>
+            </div>
+            
+            <div id="fileInfo">
+                <p>No file selected</p>
+            </div>
+            
+            <div class="visualization" id="uploadVisualization">
+                <!-- Audio visualization for uploaded file -->
+            </div>
+            
+            <div id="uploadResult">
+                <p>Upload a file to see analysis</p>
+            </div>
+            
+            <button class="action-button" id="analyzeButton" disabled>Analyze Emotions</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const liveMicCard = document.getElementById('liveMicCard');
+            const uploadAudioCard = document.getElementById('uploadAudioCard');
+            const liveMicModal = document.getElementById('liveMicModal');
+            const uploadModal = document.getElementById('uploadModal');
+            const closeLiveMic = document.getElementById('closeLiveMic');
+            const closeUpload = document.getElementById('closeUpload');
+            const startListeningBtn = document.getElementById('startListening');
+            const stopListeningBtn = document.getElementById('stopListening');
+            const audioFileInput = document.getElementById('audioFile');
+            const fileInfo = document.getElementById('fileInfo');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const visualization = document.getElementById('visualization');
+            const emotionResult = document.getElementById('emotionResult');
+            
+            // Audio context for visualization
+            let audioContext;
+            let analyser;
+            let microphone;
+            let javascriptNode;
+            let isListening = false;
+            
+            // Open Live Mic Modal
+            liveMicCard.addEventListener('click', function() {
+                liveMicModal.style.display = 'flex';
+                createBars(visualization, 50);
+            });
+            
+            // Open Upload Modal
+            uploadAudioCard.addEventListener('click', function() {
+                uploadModal.style.display = 'flex';
+                createBars(document.getElementById('uploadVisualization'), 50);
+            });
+            
+            // Close Modals
+            closeLiveMic.addEventListener('click', function() {
+                liveMicModal.style.display = 'none';
+                if (isListening) stopListening();
+            });
+            
+            closeUpload.addEventListener('click', function() {
+                uploadModal.style.display = 'none';
+            });
+            
+            // Start/Stop Listening
+            startListeningBtn.addEventListener('click', startListening);
+            stopListeningBtn.addEventListener('click', stopListening);
+            
+            // File Upload Handling
+            audioFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    fileInfo.innerHTML = `<p>Selected file: <strong>${file.name}</strong></p>`;
+                    analyzeButton.disabled = false;
+                }
+            });
+            
+            // Analyze Button
+            analyzeButton.addEventListener('click', function() {
+                const file = audioFileInput.files[0];
+                if (file) {
+                    simulateAnalysis(document.getElementById('uploadResult'), file.name);
+                }
+            });
+            
+            // Create visualization bars
+            function createBars(container, count) {
+                container.innerHTML = '';
+                const width = container.clientWidth / count - 2;
+                
+                for (let i = 0; i < count; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.left = i * (width + 2) + 'px';
+                    bar.style.width = width + 'px';
+                    container.appendChild(bar);
+                }
+            }
+            
+            // Start Listening Function
+            function startListening() {
+                isListening = true;
+                startListeningBtn.style.display = 'none';
+                stopListeningBtn.style.display = 'inline-block';
+                emotionResult.innerHTML = '<p>Listening... Speak now</p>';
+                
+                // Simulate audio visualization
+                simulateAudioVisualization(visualization);
+                
+                // In a real app, this would initialize the Web Audio API
+                try {
+                    // Initialize audio context
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+                    
+                    // Set up analyser
+                    analyser.smoothingTimeConstant = 0.8;
+                    analyser.fftSize = 1024;
+                    
+                    // Connect nodes
+                    javascriptNode.connect(audioContext.destination);
+                    analyser.connect(javascriptNode);
+                    
+                    // Get microphone input
+                    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                        .then(function(stream) {
+                            microphone = audioContext.createMediaStreamSource(stream);
+                            microphone.connect(analyser);
+                            
+                            // Process audio
+                            javascriptNode.onaudioprocess = function() {
+                                const array = new Uint8Array(analyser.frequencyBinCount);
+                                analyser.getByteFrequencyData(array);
+                                
+                                // Update visualization
+                                const bars = visualization.getElementsByClassName('bar');
+                                for (let i = 0; i < bars.length; i++) {
+                                    const value = array[i] / 255;
+                                    const height = value * 100;
+                                    bars[i].style.height = height + 'px';
+                                }
+                                
+                                // In a real app, we would send data to the AI here
+                            };
+                        })
+                        .catch(function(err) {
+                            // Fallback to simulation if microphone access fails
+                            console.error('Error accessing microphone:', err);
+                            simulateAudioVisualization(visualization);
+                        });
+                } catch (e) {
+                    console.error('Error initializing audio:', e);
+                    simulateAudioVisualization(visualization);
+                }
+                
+                // Simulate emotion detection after a delay
+                setTimeout(() => {
+                    detectEmotion();
+                }, 3000);
+            }
+            
+            // Stop Listening Function
+            function stopListening() {
+                isListening = false;
+                startListeningBtn.style.display = 'inline-block';
+                stopListeningBtn.style.display = 'none';
+                emotionResult.innerHTML = '<p>Listening stopped</p>';
+                
+                // Disconnect audio nodes
+                if (javascriptNode) {
+                    javascriptNode.onaudioprocess = null;
+                    javascriptNode.disconnect();
+                }
+                
+                if (microphone) {
+                    microphone.disconnect();
+                }
+                
+                if (analyser) {
+                    analyser.disconnect();
+                }
+                
+                // Stop visualization
+                const bars = visualization.getElementsByClassName('bar');
+                for (let i = 0; i < bars.length; i++) {
+                    bars[i].style.height = '20px';
+                }
+            }
+            
+            // Simulate Audio Visualization
+            function simulateAudioVisualization(container) {
+                const bars = container.getElementsByClassName('bar');
+                let frameCount = 0;
+                
+                const animate = function() {
+                    if (!isListening) return;
+                    
+                    for (let i = 0; i < bars.length; i++) {
+                        // Create a wave pattern
+                        const height = 20 + Math.abs(Math.sin((frameCount + i * 3) / 10)) * 80;
+                        bars[i].style.height = height + 'px';
+                    }
+                    
+                    frameCount++;
+                    requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+            
+            // Simulate Emotion Detection
+            function detectEmotion() {
+                if (!isListening) return;
+                
+                const emotions = [
+                    { name: 'Happiness', value: Math.random() * 100 },
+                    { name: 'Sadness', value: Math.random() * 100 },
+                    { name: 'Anger', value: Math.random() * 100 },
+                    { name: 'Fear', value: Math.random() * 100 },
+                    { name: 'Neutral', value: Math.random() * 100 }
+                ];
+                
+                // Normalize values
+                const total = emotions.reduce((sum, emotion) => sum + emotion.value, 0);
+                emotions.forEach(emotion => emotion.value = (emotion.value / total * 100).toFixed(1));
+                
+                // Sort by value
+                emotions.sort((a, b) => b.value - a.value);
+                
+                // Display results
+                let html = '<h3>Emotion Analysis Results:</h3>';
+                emotions.forEach(emotion => {
+                    html += `
+                        <div style="margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${emotion.name}:</span>
+                                <span>${emotion.value}%</span>
+                            </div>
+                            <div style="height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                                <div style="height: 100%; width: ${emotion.value}%; background: var(--accent); border-radius: 5px;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                emotionResult.innerHTML = html;
+            }
+            
+            // Simulate Analysis for Uploaded File
+            function simulateAnalysis(container, filename) {
+                container.innerHTML = '<p>Analyzing... Please wait</p>';
+                
+                // Simulate processing time
+                setTimeout(() => {
+                    const emotions = [
+                        { name: 'Happiness', value: (Math.random() * 100).toFixed(1) },
+                        { name: 'Sadness', value: (Math.random() * 100).toFixed(1) },
+                        { name: 'Anger', value: (Math.random() * 100).toFixed(1) },
+                        { name: 'Fear', value: (Math.random() * 100).toFixed(1) },
+                        { name: 'Neutral', value: (Math.random() * 100).toFixed(1) }
+                    ];
+                    
+                    // Normalize values
+                    const total = emotions.reduce((sum, emotion) => sum + parseFloat(emotion.value), 0);
+                    emotions.forEach(emotion => emotion.value = (parseFloat(emotion.value) / total * 100).toFixed(1));
+                    
+                    // Sort by value
+                    emotions.sort((a, b) => b.value - a.value);
+                    
+                    // Display results
+                    let html = `<h3>Analysis of "${filename}":</h3>`;
+                    emotions.forEach(emotion => {
+                        html += `
+                            <div style="margin: 10px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>${emotion.name}:</span>
+                                    <span>${emotion.value}%</span>
+                                </div>
+                                <div style="height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                                    <div style="height: 100%; width: ${emotion.value}%; background: var(--primary); border-radius: 5px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                }, 2000);
+            }
+            
+            // Initialize visualization bars
+            createBars(visualization, 50);
+            createBars(document.getElementById('uploadVisualization'), 50);
+            
+            // Add animation to feature cards on scroll
+            const featureCards = document.querySelectorAll('.feature-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.transform = 'translateY(0)';
+                        entry.target.style.opacity = '1';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            featureCards.forEach(card => {
+                card.style.transform = 'translateY(50px)';
+                card.style.opacity = '0';
+                card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
 </body>
 </html>
