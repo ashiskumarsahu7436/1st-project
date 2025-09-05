@@ -24,8 +24,18 @@
   ],
   "env": {
     "ASSEMBLYAI_API_KEY": "@assemblyai_api_key",
-    "HUGGING_FACE_TOKEN": "@hugging_face_token", 
-    "IBM_WATSON_API_KEY": "@ibm_watson_api_key",
-    "IBM_WATSON_URL": "@ibm_watson_url"
-  }
+    "HUGGING_FACE_TOKEN": "@hugging_face_token",
+    "PERPLEXITY_API_KEY": "@perplexity_api_key"
+  },
+  "functions": {
+    "api/audio-analysis.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/audio-analysis.js"
+    }
+  ]
 }
