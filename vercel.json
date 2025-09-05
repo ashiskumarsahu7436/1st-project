@@ -2,22 +2,30 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "api/audio-analysis.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api/audio-analysis.js",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+      }
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/api/audio-analysis.js"
     }
-  ]
+  ],
+  "env": {
+    "ASSEMBLYAI_API_KEY": "@assemblyai_api_key",
+    "HUGGING_FACE_TOKEN": "@hugging_face_token", 
+    "IBM_WATSON_API_KEY": "@ibm_watson_api_key",
+    "IBM_WATSON_URL": "@ibm_watson_url"
+  }
 }
