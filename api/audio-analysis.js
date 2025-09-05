@@ -20,8 +20,7 @@ app.use(express.json());
 // Environment variables
 const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY;
 const HUGGING_FACE_TOKEN = process.env.HUGGING_FACE_TOKEN;
-const IBM_WATSON_API_KEY = process.env.IBM_WATSON_API_KEY;
-const IBM_WATSON_URL = process.env.IBM_WATSON_URL;
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -32,7 +31,7 @@ app.get('/api/health', (req, res) => {
     services: {
       assemblyAI: !!ASSEMBLYAI_API_KEY,
       huggingFace: !!HUGGING_FACE_TOKEN,
-      ibmWatson: !!IBM_WATSON_API_KEY
+      perplexityAI: !!PERPLEXITY_API_KEY
     }
   });
 });
@@ -59,35 +58,29 @@ app.post('/api/analyze-audio', upload.single('audio'), async (req, res) => {
       });
     }
 
-    // Step 1: Upload to AssemblyAI and get transcript
-    console.log('Uploading to AssemblyAI...');
-    const assemblyResult = await processWithAssemblyAI(audioFile.buffer);
+    // Step 1: Process with AssemblyAI and Hugging Face in parallel
+    console.log('Processing with AssemblyAI and Hugging Face...');
+    const [assemblyResult, huggingResult] = await Promise.all([
+      processWithAssemblyAI(audioFile.buffer),
+      processWithHuggingFace(audioFile.buffer).catch(error => {
+        console.warn('Hugging Face processing failed:', error.message);
+        return { error: error.message };
+      })
+    ]);
     
-    // Step 2: Process with Hugging Face (if configured)
-    let huggingResult = null;
-    if (HUGGING_FACE_TOKEN) {
+    // Step 2: Process with Perplexity AI for detailed analysis
+    let perplexityResult = null;
+    if (PERPLEXITY_API_KEY) {
       try {
-        console.log('Processing with Hugging Face...');
-        huggingResult = await processWithHuggingFace(assemblyResult.text);
-      } catch (hfError) {
-        console.warn('Hugging Face processing failed:', hfError.message);
-        huggingResult = { error: hfError.message };
+        console.log('Processing with Perplexity AI...');
+        perplexityResult = await processWithPerplexity(assemblyResult, huggingResult);
+      } catch (pplxError) {
+        console.warn('Perplexity AI processing failed:', pplxError.message);
+        perplexityResult = { error: pplxError.message };
       }
     }
 
-    // Step 3: Process with IBM Watson (if configured)
-    let ibmResult = null;
-    if (IBM_WATSON_API_KEY && IBM_WATSON_URL) {
-      try {
-        console.log('Processing with IBM Watson...');
-        ibmResult = await processWithIBMWatson(assemblyResult.text);
-      } catch (ibmError) {
-        console.warn('IBM Watson processing failed:', ibmError.message);
-        ibmResult = { error: ibmError.message };
-      }
-    }
-
-    // Step 4: Return combined results
+    // Step 3: Return combined results
     console.log('Analysis completed successfully');
     res.json({
       success: true,
@@ -95,11 +88,11 @@ app.post('/api/analyze-audio', upload.single('audio'), async (req, res) => {
       audioMetrics: {
         wordsPerMinute: calculateWPM(assemblyResult.text, assemblyResult.audio_duration),
         confidence: assemblyResult.confidence,
-        audioDuration: assemblyResult.audio_duration
+        audioDuration: assemblyResult.audio_duration,
+        sentiment: assemblyResult.sentiment_analysis_results || null
       },
       emotions: huggingResult,
-      tones: ibmResult,
-      sentiment: assemblyResult.sentiment_analysis_results || null
+      detailedAnalysis: perplexityResult
     });
 
   } catch (error) {
@@ -200,19 +193,21 @@ async function processWithAssemblyAI(audioBuffer) {
 }
 
 // Hugging Face processing function
-async function processWithHuggingFace(text) {
+async function processWithHuggingFace(audioBuffer) {
   if (!HUGGING_FACE_TOKEN) {
-    return { error: 'Hugging Face not configured' };
+    throw new Error('Hugging Face not configured');
   }
 
   try {
+    // For audio emotion detection, we would typically use a different model
+    // This is a placeholder for the actual implementation
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base',
-      { inputs: text },
+      'https://api-inference.huggingface.co/models/superb/hubert-large-superb-er',
+      audioBuffer,
       {
         headers: {
           'Authorization': `Bearer ${HUGGING_FACE_TOKEN}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'audio/flac'
         },
         timeout: 15000
       }
@@ -225,28 +220,108 @@ async function processWithHuggingFace(text) {
   }
 }
 
-// IBM Watson processing function
-async function processWithIBMWatson(text) {
-  if (!IBM_WATSON_API_KEY || !IBM_WATSON_URL) {
-    return { error: 'IBM Watson not configured' };
+// Perplexity AI processing function for detailed analysis
+async function processWithPerplexity(assemblyResult, huggingResult) {
+  if (!PERPLEXITY_API_KEY) {
+    throw new Error('Perplexity AI not configured');
   }
 
   try {
+    // Prepare the detailed prompt for Perplexity analysis
+    const detailedAnalysisPrompt = `
+DETAILED AI ANALYSIS REQUEST:
+
+ANALYSIS DATA:
+{
+  "TRANSCRIPT": "${assemblyResult.text}",
+  
+  "AUDIO_INTELLIGENCE": {
+    "speech_metrics": ${JSON.stringify({
+      wordsPerMinute: calculateWPM(assemblyResult.text, assemblyResult.audio_duration),
+      confidence: assemblyResult.confidence,
+      audioDuration: assemblyResult.audio_duration
+    })},
+    "sentiment_analysis": ${JSON.stringify(assemblyResult.sentiment_analysis_results || {})}
+  },
+  
+  "EMOTION_ANALYSIS": ${JSON.stringify(huggingResult)}
+}
+
+ANALYSIS INSTRUCTIONS:
+
+1. EMOTIONAL TRUTH ASSESSMENT:
+   - Identify surface emotions vs hidden true emotions
+   - Detect emotional contradictions between words and voice
+   - Analyze emotional consistency throughout speech
+
+2. VERACITY & HONESTY ANALYSIS:
+   - Look for deception indicators in vocal patterns
+   - Identify stress cues that suggest lying
+   - Analyze speech patterns for truthfulness
+
+3. COMMUNICATION INTENT DETECTION:
+   - Determine if intent is: Educate, Persuade, Manipulate, Deceive
+   - Identify persuasion techniques being used
+   - Detect hidden agendas or ulterior motives
+
+4. PSYCHOLOGICAL PROFILE:
+   - Analyze personality traits from speech patterns
+   - Identify emotional state stability
+   - Detect anxiety, confidence, or narcissism indicators
+
+5. MANIPULATION ASSESSMENT:
+   - Check for brainwashing techniques
+   - Identify emotional manipulation patterns
+   - Detect gaslighting or psychological pressure
+
+6. CULTURAL & CONTEXTUAL ANALYSIS:
+   - Consider cultural influences on communication style
+   - Analyze context-appropriate vs inappropriate responses
+   - Identify cultural truth-telling patterns
+
+7. RISK ASSESSMENT:
+   - Evaluate trustworthiness level
+   - Identify potential red flags
+   - Provide confidence scores for each assessment
+
+REQUIRED OUTPUT FORMAT:
+- Comprehensive psychological assessment report
+- Section-wise analysis with evidence from data
+- Confidence levels for each finding
+- Overall truthfulness score (0-100%)
+- Recommended actions or precautions
+`;
+
+    // Call Perplexity API
     const response = await axios.post(
-      `${IBM_WATSON_URL}/v3/tone?version=2017-09-21`,
-      { text: text },
+      'https://api.perplexity.ai/chat/completions',
+      {
+        model: 'sonar-reasoning',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert psychologist and voice analysis specialist. Analyze the provided voice data and provide a comprehensive truthfulness and psychological assessment.'
+          },
+          {
+            role: 'user',
+            content: detailedAnalysisPrompt
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 2000
+      },
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`apikey:${IBM_WATSON_API_KEY}`).toString('base64')}`,
+          'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 15000
+        timeout: 30000
       }
     );
 
     return response.data;
   } catch (error) {
-    console.error('IBM Watson error:', error.message);
+    console.error('Perplexity AI error:', error.message);
     throw error;
   }
 }
