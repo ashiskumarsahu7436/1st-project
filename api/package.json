@@ -1,11 +1,12 @@
 {
   "name": "emoreco-backend",
   "version": "1.0.0",
-  "description": "Backend API for EMORECO voice analysis",
+  "description": "Backend API for EMORECO voice emotion and truth analysis",
   "main": "audio-analysis.js",
   "scripts": {
     "start": "node audio-analysis.js",
-    "dev": "nodemon audio-analysis.js"
+    "dev": "nodemon audio-analysis.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -13,17 +14,22 @@
     "axios": "^1.5.0",
     "form-data": "^4.0.0"
   },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
   "engines": {
     "node": "18.x"
   },
   "keywords": [
     "voice-analysis",
     "emotion-detection",
+    "truth-detection",
     "ai",
     "assemblyai",
     "huggingface",
-    "ibm-watson"
+    "perplexity-ai"
   ],
   "author": "EMORECO Team",
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://emoreco.vercel.app"
 }
