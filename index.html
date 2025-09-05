@@ -404,6 +404,25 @@
             transition: height 0.1s ease;
         }
         
+        /* Detailed Report Button */
+        .detailed-report-btn {
+            padding: 12px 25px;
+            background: var(--accent);
+            color: var(--light);
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .detailed-report-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             header {
@@ -679,7 +698,7 @@
                     <i class="fas fa-robot"></i>
                 </div>
                 <h3 class="feature-title">Multi-AI Analysis</h3>
-                <p>Combined power of AssemblyAI, Hugging Face,Perplexity AI and IBM Watson</p>
+                <p>Combined power of AssemblyAI, Hugging Face and Perplexity AI</p>
             </div>
             
             <div class="feature-card">
@@ -733,13 +752,13 @@
             <div class="step">
                 <div class="step-number">2</div>
                 <h3>Multi-AI Processing</h3>
-                <p>Three AI systems analyze different aspects</p>
+                <p>AI systems analyze different aspects</p>
             </div>
             
             <div class="step">
                 <div class="step-number">3</div>
-                <h3>Truth Assessment</h3>
-                <p>Get detailed truthfulness analysis</p>
+                <h3>Detailed Report</h3>
+                <p>Get comprehensive truthfulness analysis</p>
             </div>
         </div>
     </section>
@@ -770,8 +789,7 @@
             <div class="tabs" id="resultsTabs">
                 <div class="tab active" data-tab="summary">Summary</div>
                 <div class="tab" data-tab="emotions">Emotions</div>
-                <div class="tab" data-tab="truth">Truth Analysis</div>
-                <div class="tab" data-tab="detailed">Detailed Report</div>
+                <div class="tab" data-tab="transcript">Transcript</div>
                 <div class="tab" data-tab="metrics">Voice Metrics</div>
             </div>
             
@@ -781,6 +799,7 @@
                     <div class="truth-score" id="truthScore">Loading...</div>
                     <h3>Analysis Summary</h3>
                     <div id="summaryContent"></div>
+                    <button class="detailed-report-btn" id="detailedReportBtn">View Detailed Analysis Report</button>
                 </div>
                 
                 <!-- Emotions Results -->
@@ -789,16 +808,10 @@
                     <div id="emotionResults"></div>
                 </div>
                 
-                <!-- Truth Analysis -->
-                <div class="tab-content" id="truthResults">
-                    <h3>Truthfulness Assessment</h3>
-                    <div id="truthContent"></div>
-                </div>
-                
-                <!-- Detailed Report -->
-                <div class="tab-content" id="detailedResults">
-                    <h3>Comprehensive Analysis Report</h3>
-                    <div id="detailedReport"></div>
+                <!-- Transcript Results -->
+                <div class="tab-content" id="transcriptResults">
+                    <h3>Speech Transcript</h3>
+                    <div id="transcriptContent" class="report-section"></div>
                 </div>
                 
                 <!-- Speech Metrics -->
@@ -810,6 +823,16 @@
             
             <button class="action-button" id="stopAnalysis" style="display: none; background: var(--secondary);">Stop Analysis</button>
             <button class="action-button" id="newAnalysis">New Analysis</button>
+        </div>
+    </div>
+
+    <!-- Detailed Analysis Report Modal -->
+    <div class="modal" id="detailedReportModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeDetailedReport">&times;</span>
+            <h2>Detailed Analysis Report</h2>
+            <div id="detailedReportContent" class="report-section"></div>
+            <button class="action-button" id="closeDetailedReportBtn">Close</button>
         </div>
     </div>
 
@@ -891,8 +914,6 @@
         // ==================== CONFIGURATION ====================
         const BACKEND_URL = 'https://emoreco.vercel.app';
         const HUGGING_FACE_TOKEN = 'your_hugging_face_token_here';
-        const IBM_WATSON_API_KEY = 'your_ibm_watson_key_here';
-        const IBM_WATSON_URL = 'your_ibm_watson_url_here';
         const PERPLEXITY_API_KEY = 'your_perplexity_api_key_here';
         // =======================================================
 
@@ -912,9 +933,11 @@
         const loginModal = document.getElementById('loginModal');
         const registerModal = document.getElementById('registerModal');
         const analysisModal = document.getElementById('analysisModal');
+        const detailedReportModal = document.getElementById('detailedReportModal');
         const closeLogin = document.getElementById('closeLogin');
         const closeRegister = document.getElementById('closeRegister');
         const closeAnalysis = document.getElementById('closeAnalysis');
+        const closeDetailedReport = document.getElementById('closeDetailedReport');
         const goToRegister = document.getElementById('goToRegister');
         const goToLogin = document.getElementById('goToLogin');
         
@@ -927,17 +950,19 @@
         const uploadAudioBtn = document.getElementById('uploadAudioBtn');
         const stopAnalysis = document.getElementById('stopAnalysis');
         const newAnalysis = document.getElementById('newAnalysis');
+        const detailedReportBtn = document.getElementById('detailedReportBtn');
+        const closeDetailedReportBtn = document.getElementById('closeDetailedReportBtn');
         
         const analysisTitle = document.getElementById('analysisTitle');
         const analysisStatus = document.getElementById('analysisStatus');
         const resultContainer = document.getElementById('resultContainer');
         const emotionResults = document.getElementById('emotionResults');
-        const detailedReport = document.getElementById('detailedReport');
+        const transcriptContent = document.getElementById('transcriptContent');
         const speechMetrics = document.getElementById('speechMetrics');
         const visualization = document.getElementById('visualization');
         const summaryContent = document.getElementById('summaryContent');
-        const truthContent = document.getElementById('truthContent');
         const truthScore = document.getElementById('truthScore');
+        const detailedReportContent = document.getElementById('detailedReportContent');
         
         // Audio variables
         let mediaRecorder;
@@ -947,6 +972,9 @@
         let analyser;
         let microphone;
         let animationId;
+        
+        // Analysis results storage
+        let currentAnalysisResults = null;
 
         // Check if user is already logged in
         if (currentUser) {
@@ -963,6 +991,9 @@
             analysisModal.style.display = 'none';
             if (isRecording) stopRecording();
         });
+        
+        closeDetailedReport.addEventListener('click', () => detailedReportModal.style.display = 'none');
+        closeDetailedReportBtn.addEventListener('click', () => detailedReportModal.style.display = 'none');
         
         goToRegister.addEventListener('click', (e) => {
             e.preventDefault();
@@ -996,6 +1027,8 @@
             analysisStatus.innerHTML = '<p>Preparing for analysis...</p>';
             startLiveMic.click();
         });
+        
+        detailedReportBtn.addEventListener('click', showDetailedReport);
 
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
@@ -1016,6 +1049,7 @@
                 analysisModal.style.display = 'none';
                 if (isRecording) stopRecording();
             }
+            if (e.target === detailedReportModal) detailedReportModal.style.display = 'none';
         });
         
         // Functions
@@ -1152,6 +1186,7 @@
             stopAnalysis.style.display = 'block';
             newAnalysis.style.display = 'none';
             resultContainer.style.display = 'none';
+            detailedReportBtn.style.display = 'none';
             
             createBars(visualization, 50);
             
@@ -1246,6 +1281,7 @@
                 stopAnalysis.style.display = 'none';
                 newAnalysis.style.display = 'block';
                 resultContainer.style.display = 'none';
+                detailedReportBtn.style.display = 'none';
                 
                 // Create visualization
                 createBars(visualization, 50);
@@ -1261,22 +1297,26 @@
             analysisStatus.innerHTML = '<p>Running multi-AI truth analysis... <div class="spinner"></div></p>';
             
             try {
-                // Step 1: Parallel processing with all AI systems
-                const [assemblyResult, huggingResult, ibmResult] = await Promise.all([
+                // Step 1: Parallel processing with AssemblyAI and Hugging Face
+                const [assemblyResult, huggingResult] = await Promise.all([
                     analyzeWithAssemblyAI(audioBlob),
-                    analyzeWithHuggingFace(audioBlob),
-                    analyzeWithIBMWatson(audioBlob)
+                    analyzeWithHuggingFace(audioBlob)
                 ]);
                 
-                // Step 2: Generate comprehensive truth analysis
+                // Step 2: Generate comprehensive truth analysis with Perplexity
                 const truthReport = await generateTruthAnalysisReport(
                     assemblyResult, 
-                    huggingResult, 
-                    ibmResult
+                    huggingResult
                 );
                 
-                // Step 3: Display all results
-                displayAllResults(assemblyResult, huggingResult, ibmResult, truthReport);
+                // Step 3: Store results and display
+                currentAnalysisResults = {
+                    assemblyResult,
+                    huggingResult,
+                    truthReport
+                };
+                
+                displayAllResults(assemblyResult, huggingResult, truthReport);
                 
             } catch (error) {
                 console.error('Analysis error:', error);
@@ -1323,36 +1363,24 @@
             }
         }
         
-        // IBM Watson Integration
-        async function analyzeWithIBMWatson(audioBlob) {
-            try {
-                // In real implementation, we would send audio to IBM Watson
-                // For demo, we'll simulate the response
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                return simulateIBMWatsonResults();
-            } catch (error) {
-                console.error('IBM Watson error:', error);
-                return simulateIBMWatsonResults();
-            }
-        }
-        
         // Perplexity Pro Truth Analysis
-        async function generateTruthAnalysisReport(assemblyResult, huggingResult, ibmResult) {
+        async function generateTruthAnalysisReport(assemblyResult, huggingResult) {
             try {
                 // In real implementation, we would call Perplexity API
                 // For demo, we'll simulate a detailed report
                 await new Promise(resolve => setTimeout(resolve, 2500));
-                return simulateTruthAnalysisReport(assemblyResult, huggingResult, ibmResult);
+                return simulateTruthAnalysisReport(assemblyResult, huggingResult);
             } catch (error) {
                 console.error('Perplexity analysis error:', error);
-                return simulateTruthAnalysisReport(assemblyResult, huggingResult, ibmResult);
+                return simulateTruthAnalysisReport(assemblyResult, huggingResult);
             }
         }
         
         // Display All Results
-        function displayAllResults(assemblyResult, huggingResult, ibmResult, truthReport) {
+        function displayAllResults(assemblyResult, huggingResult, truthReport) {
             analysisStatus.style.display = 'none';
             resultContainer.style.display = 'block';
+            detailedReportBtn.style.display = 'block';
             
             // Display summary
             displaySummary(truthReport);
@@ -1360,11 +1388,8 @@
             // Display emotions
             displayEmotions(huggingResult);
             
-            // Display truth analysis
-            displayTruthAnalysis(truthReport);
-            
-            // Display detailed report
-            displayDetailedReport(truthReport);
+            // Display transcript
+            displayTranscript(assemblyResult);
             
             // Display metrics
             displaySpeechMetrics(assemblyResult);
@@ -1408,42 +1433,11 @@
             emotionResults.innerHTML = html;
         }
         
-        function displayTruthAnalysis(report) {
-            let html = `
-                <div class="report-section">
-                    <h4>Truthfulness Indicators</h4>
-                    <p>${report.truthAnalysis.overview}</p>
-                </div>
+        function displayTranscript(assemblyResult) {
+            transcriptContent.innerHTML = `
+                <p><strong>Full Transcript:</strong> ${assemblyResult.transcript}</p>
+                <p><strong>Sentiment:</strong> ${assemblyResult.sentiment}</p>
             `;
-            
-            report.truthAnalysis.indicators.forEach(indicator => {
-                html += `
-                    <div class="insight-item ${indicator.type === 'warning' ? 'warning-item' : 'positive-item'}">
-                        <strong>${indicator.label}:</strong> ${indicator.description}
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" style="width: ${indicator.confidence}%"></div>
-                        </div>
-                        <small>Confidence: ${indicator.confidence}%</small>
-                    </div>
-                `;
-            });
-            
-            truthContent.innerHTML = html;
-        }
-        
-        function displayDetailedReport(report) {
-            let html = '';
-            
-            report.detailedAnalysis.forEach(section => {
-                html += `
-                    <div class="report-section">
-                        <h4>${section.title}</h4>
-                        <p>${section.content}</p>
-                    </div>
-                `;
-            });
-            
-            detailedReport.innerHTML = html;
         }
         
         function displaySpeechMetrics(assemblyResult) {
@@ -1465,6 +1459,58 @@
                     <div class="metric-label">Emotional Intensity</div>
                 </div>
             `;
+        }
+        
+        function showDetailedReport() {
+            if (!currentAnalysisResults || !currentAnalysisResults.truthReport) {
+                alert('No analysis data available. Please perform an analysis first.');
+                return;
+            }
+            
+            detailedReportModal.style.display = 'flex';
+            const report = currentAnalysisResults.truthReport;
+            
+            let html = `
+                <h3>Comprehensive Psychological Analysis Report</h3>
+                <div class="truth-score ${report.truthScore >= 70 ? 'high-truth' : report.truthScore >= 40 ? 'medium-truth' : 'low-truth'}">
+                    Overall Truth Score: ${report.truthScore}%
+                </div>
+                
+                <div class="report-section">
+                    <h4>Executive Summary</h4>
+                    <p>${report.summary}</p>
+                </div>
+            `;
+            
+            report.detailedAnalysis.forEach(section => {
+                html += `
+                    <div class="report-section">
+                        <h4>${section.title}</h4>
+                        <p>${section.content}</p>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="report-section">
+                    <h4>Behavioral Indicators</h4>
+            `;
+            
+            report.truthAnalysis.indicators.forEach(indicator => {
+                html += `
+                    <div class="insight-item ${indicator.type === 'warning' ? 'warning-item' : 'positive-item'}">
+                        <strong>${indicator.label}:</strong> ${indicator.description}
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${indicator.confidence}%"></div>
+                        </div>
+                        <small>Confidence: ${indicator.confidence}%</small>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            detailedReportContent.innerHTML = html;
         }
         
         // Simulated results for demo purposes
@@ -1493,18 +1539,7 @@
             ];
         }
         
-        function simulateIBMWatsonResults() {
-            return {
-                tones: [
-                    { tone_id: "tentative", score: 0.78 },
-                    { tone_id: "analytical", score: 0.65 },
-                    { tone_id: "sadness", score: 0.42 },
-                    { tone_id: "fear", score: 0.38 }
-                ]
-            };
-        }
-        
-        function simulateTruthAnalysisReport(assemblyResult, huggingResult, ibmResult) {
+        function simulateTruthAnalysisReport(assemblyResult, huggingResult) {
             return {
                 truthScore: 63,
                 confidence: 78,
@@ -1563,10 +1598,15 @@
             // For demo purposes when APIs fail
             const assemblyResult = simulateAssemblyAIResults();
             const huggingResult = simulateHuggingFaceResults();
-            const ibmResult = simulateIBMWatsonResults();
-            const truthReport = simulateTruthAnalysisReport(assemblyResult, huggingResult, ibmResult);
+            const truthReport = simulateTruthAnalysisReport(assemblyResult, huggingResult);
             
-            displayAllResults(assemblyResult, huggingResult, ibmResult, truthReport);
+            currentAnalysisResults = {
+                assemblyResult,
+                huggingResult,
+                truthReport
+            };
+            
+            displayAllResults(assemblyResult, huggingResult, truthReport);
         }
         
         function createBars(container, count) {
